@@ -1,0 +1,25 @@
+=========================MASTER==================
+ iptables -D INPUT 1
+  181  iptables -L
+  182  iptables -A INPUT -i ens33 -p icmp -m limit --limit 5/s -j ACCEPT
+  183  iptables -L
+  184  iptables -D INPUT 1
+  185  iptables -L
+  186  ip a
+  187  iptables -A INPUT -i interface -p icmp -m length --length 1:128 -j ACCEPT
+  188  iptables -A INPUT -i interface -p icmp -m length --length 1:128 -j drop
+  189  iptables -A INPUT -i interface -p icmp -m length --length 1:128 -j DROP 
+  190  iptables -A INPUT -i interface -p icmp -m length --length 128:65500 -j DROP 
+  191  iptables -L
+  192  iptables -D INPUT 1
+  193  iptables -L
+  194  iptables -D INPUT 1
+  195  iptables -L
+  196  iptables -A INPUT -i interface -p icmp -m length --length 128:65500 -j DROP 
+  197  iptables -L
+  198  iptables -D INPUT 1
+  199  iptables -L
+  200  iptables -A INPUT -i interface -p icmp -m length --length 128:65500 -j DROP 
+  201  iptables -D INPUT 1
+  202  iptables -A INPUT -i ens33 -p icmp -m length --length 128:65500 -j DROP 
+  203  iptables -L
