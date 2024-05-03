@@ -1,0 +1,14 @@
+Load Balancer :
+	A load balancer is a device that acts as a reverse proxy and distributes network or
+	 application traffic across a number of servers.
+	 Load balancers are used to increase capacity (concurrent users) and reliability of applications.
+
+1>  Default Algorithm load balancer is also called as Round Robin.
+2> Load balancer is called as load farming.
+3> Round Robin you can also defined weight.
+
+***Their are Three Types of Round Robin******
+1>Load Balancer
+2>RoundRobin
+3>least_connection(least_conn):Initially work as round robin connect to those which have tell weight.
+4> ip_hash: it handles ip when user login then it keep all request until it logout.
