@@ -1,0 +1,150 @@
+==================================Master=====================
+-----BASIC SECURITY COMMANDS----------- 
+1  systemctl stop firewalld.service 
+    2  systemctl disable firewalld.service 
+    3  vi /etc/selinux/config 
+    4  getenforce
+    5  init 6
+    6  systemctl status firewalld.service 
+    7  hostnamectl set-hostname node1
+    8  ip a
+    9  ifup ens37
+   10  dhclient
+   11  ip a
+   12  ifup ens37
+   13  nmcli networking off
+   14  nmcli networking on
+   15  dhclient
+   16  kill -9 3157
+   17  dhclient
+   18  ifup ens37
+   19  init 6
+   20  yum install iptables-services iptables-utils
+   21  systemctl start iptables
+   22  systemctl status iptables
+   23  systemctl enable iptables
+   24  iptables -L 
+   25  iptables -t
+   26  iptables -t filter -L
+   27  history
+   28  iptables -t nat -L
+   29  iptables -t mangle -L
+   30  iptables -t raw -L
+   31  iptables --flush 
+   32  iptables -
+   33  iptables -L
+   34  systemctl restart iptables
+   35  iptables -L
+   36  iptables --flush 
+   37  iptables -L
+   38  iptables -P FORWARD DROP
+   39  iptables -L
+   40  hostname
+   41  iptables -t raw -L
+   42  iptables -t mangle -L
+   43  iptables -t filter -L
+   44  iptables -t nat -L
+   45  ip a
+   46  hostnamectl set-hostname master
+   47  cat /proc/sys/net/ipv4/ip_forward
+   48  vi /etc/sysctl.conf 
+   49  systemctl status iptables
+   50  iptables -F
+   51  ip a
+   52  ip
+   53  iptables -t nat -L
+   54  iptables -L
+   55  iptables -P FORWORD ACCEPT
+   56  iptables -P FORWARD ACCEPT
+   57  iptables -L
+   58  ip a
+   59  systemctl restart iptables
+   60  iptables -L
+   61  ping www.google.com
+   62  cat /proc/sys/net/ipv4/ip_forward
+   63  ip a
+   64  iptables -L
+   65  iptables -t nat -L
+   66  systemctl status iptablesiptables -t  nat -A POSTROUTING -s 192.168.199.0/24 -o ens33 -j MASQUERADE
+   67  iptables -t  nat -A POSTROUTING -s 192.168.199.0/24 -o ens33 -j MASQUERADE
+   68  iptables -t nat -L
+   69  ping www.google.com
+   70  ip a
+   71  ifdown ens37
+   72  ifup ens37
+   73  init 6
+   74  ip a
+   75  ping www.google.com
+   76  ip a
+   77  iptables -t nat -L
+   78  iptables -t  nat -A POSTROUTING -s 192.168.199.0/24 -o ens33 -j MASQUERADE
+   79  iptables -t nat -L
+   80  iptables -L
+   81  iptables -F
+   82  ip a
+   83  iptables -P FORWARD DROP
+   84  iptables -A FORWARD -s 192.168.199.0/24  -d 192.168.18.2 -p udp --dport 53 -j ACCEPT
+   85* 
+   86  iptables -A FORWARD -d 192.168.199.0/24  -s 192.168.18.2 -p udp --sport 53 -j ACCEPT
+   87  iptables -A FORWARD -s 192.168.199.0/24  -d www.google.com -p tcp --dport 443 -j ACCEPT
+   88  iptables -A FORWARD -d 192.168.199.0/24  -s www.google.com -p tcp --sport 443 -j ACCEPT
+   89  iptables -L
+   90  service iptables save
+   91* 
+   92* 
+   93  iptables -A FORWARD -s 192.168.199.0/24  -d www.youtube.com -p tcp --dport 443 -j ACCEPT
+   94  nslookup www.youtube.com
+   95  ess: 184.29.24.235
+   96  nslookup www.microsoft.com
+   97  curl www.google.com
+   98  iptables -F
+   99  iptables -A FORWARD -s 192.168.199.128 -d www.youtube.com -p tcp --dport 443 -j ACCEPT
+  100  iptables -A FORWARD -d 192.168.199.128 -s www.youtube.com -p tcp --sport 443 -j ACCEPT
+  101  nslookup www.youtube.com
+  102  systemctl status firewalld.service
+  103  iptables -t nat -A POSTROUTING -s 192.168.199.133 -o ens33 | ens37 -j MASQUERADE
+  104  iptables -t nat -A POSTROUTING -s 192.168.199.133 -o ens37 -j MASQUERADE
+  105  iptables -A FORWARD -s 192.168.199.128 -d www.youtube.com -p tcp --dport 443 -j ACCEPT
+  106  iptables -A FORWARD -d 192.168.199.128 -s www.youtube.com -p tcp --sport 443 -j ACCEPT
+  107  iptables -L
+  108  iptables -F
+  109  iptables -L
+  110  iptables -A FORWARD -s 192.168.199.0/24 -d 192.168.18.2 -p udp --dport 53 -j ACCEPT
+  111  history
+  112  iptables -A FORWARD -d 192.168.199.0/24 -s 192.168.18.2 -p udp --sport 53 -j ACCEPT
+  113  iptables -L
+  114  iptables -t nat -L
+  115  iptables -P FORWARD DROP
+  116  iptables -L
+  117* 
+  118  iptables -A FORWARD -s 192.168.199.0/24 -d www.youtube.com -p tcp --dport 443 -j ACCEPT
+  119* iptables -A FORWARD -s 192.168.199.128 -d www.microsoft.com -p tcp --dport 443 -j ACCEPT
+  120* iptables -A FORWARD -d 192.168.199.128 -s www.microsoft.com -p tcp --sport 443 -j ACCEPT
+  121  nslookup www.youtube.com
+  122  iptables -A FORWARD -s 192.168.199.0/24 -d www.microsoft.com -p tcp --dport 443 -j ACCEPT
+  123  history
+  124  iptables -A FORWARD -s 192.168.199.0/24 -d www.microsoft.com -p tcp --dport 443 -j ACCEPT
+  125  iptables -A FORWARD -d 192.168.199.0/24 -s www.microsoft.com -p tcp --sport 443 -j ACCEPT
+  126  iptables L
+  127  iptables -L
+  128  iptables -F
+  129  history
+  130  iptables -A FORWARD -s 192.168.199.0/24 -d 192.168.18.2 -p udp --dport 53 -j ACCEPT
+  131  iptables -A FORWARD -d 192.168.199.0/24 -s 192.168.18.2 -p udp --sport 53 -j ACCEPT
+  132  iptables -A FORWARD -s 192.168.199.128 -d www.youtube.com -p tcp --dport 443 -j ACCEPT
+  133  iptables -A FORWARD -d 192.168.199.128 -s www.youtube.com -p tcp --sport 443 -j ACCEPT
+  134  nslookup www.youtube.com
+  135  iptables -L
+  136  iptables -F
+  137  iptables -A FORWARD -s 192.168.199.128 -d www.youtube.com -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+  138  nslookup www.youtube.com
+  139  iptables -A FORWARD -d 192.168.199.128 -s www.youtube.com -p tcp --sport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+  140  nslookup www.youtube.com
+  141  iptables -A FORWARD -d 192.168.199.0/24 -s 192.168.18.2 -p udp --sport 53 -j ACCEPT
+  142  history
+  143  iptables -A FORWARD -s 192.168.199.0/24 -d 192.168.18.2 -p udp --dport 53 -j ACCEPT
+  144* 
+  145  nslookup www.youtube.com
+  146  ip a
+  147  nmtui
+  148  iptables -F
