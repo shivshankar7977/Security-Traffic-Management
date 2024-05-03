@@ -1,0 +1,217 @@
+************ZONE*************
+$$$on MASTER:$$$
+	
+[root@master ~]# systemctl start firewalld
+[root@master ~]# firewall-cmd --list-all-zones | less
+[root@master ~]# firewall-cmd --get-active-zones | less
+[root@master ~]# firewall-cmd --zone=trusted --list-interfaces  ///
+tun0
+[root@master ~]# firewall-cmd --zone=public --list-interfaces  ///
+ens37 ens33
+[root@master ~]# firewall-cmd --zone=public --remove-interfaces  ////for remove
+[root@master ~]# firewall-cmd --zone=public --remove-interface=ens37 
+success
+[root@master ~]# firewall-cmd --zone=public --list-interfaces 
+ens33
+[root@master ~]# firewall-cmd --zone=public --list-all-zones | less
+
+[2]+  Stopped                 firewall-cmd --zone=public --list-all-zones | less
+[root@master ~]# firewall-cmd --zone=work --add-interface=ens37
+success
+[root@master ~]# firewall-cmd --list-all-zone | grep hpcsa
+[root@master ~]# firewall-cmd --reload 
+success
+[root@master ~]# firewall-cmd --list-all-zone | grep hpcsa
+hpcsa
+[root@master ~]# firewall-cmd --zone=work --list-interfaces 
+ens37
+[root@master ~]# firewall-cmd --zone=public --list-interfaces 
+ens33
+[root@master ~]# firewall-cmd --zone=public --list-interfaces 
+ens33
+[root@master ~]# firewall-cmd --reload 
+success
+[root@master ~]# firewall-cmd --zone=public --list-interfaces 
+ens33
+[root@master ~]# firewall-cmd --zone=hpcsa --list-all 
+hpcsa
+  target: default
+  icmp-block-inversion: no
+  interfaces: 
+  sources: 
+  services: 
+  ports: 
+  protocols: 
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+
+HOST-ONLY:192.168.199.140
+NAT:192.168.18.134
+
+-------------------------------------------------------------------------
+ON-BASE-MASHINE(MAIN-MACHINE)
+C:\Users\rajesh>ssh root@192.168.199.140
+root@192.168.199.140's password:
+Last login: Mon Jul  3 16:23:18 2023 from 192.168.18.1
+[root@master ~]# exit
+logout
+Connection to 192.168.199.140 closed.
+
+C:\Users\rajesh>ssh root@192.168.18.134
+root@192.168.18.134's password:
+Last login: Tue Jul  4 08:18:03 2023 from 192.168.199.1
+
+_________________________________________________
+
+[root@master ~]# firewall-cmd --zone=hpcsa --add-interface=ens33
+Error: ZONE_CONFLICT: 'ens33' already bound to a zone
+[root@master ~]# firewall-cmd --zone=public --remove-interface=ens33
+success
+[root@master ~]# firewall-cmd --zone=hpcsa --add-interface=ens33 ///////////////////////////NOT ACCESS SSH
+success
+
+$$$$$$$$$$$$$on MASTER$$$$$$$$$$$
+[root@master ~]# firewall-cmd --list-services
+You're performing an operation over default zone ('public'),
+but your connections/interfaces are in zone 'hpcsa,work,trusted' (see --get-active-zones)
+You most likely need to use --zone=hpcsa option.
+
+dhcpv6-client openvpn ssh
+
+[root@master ~]# firewall-cmd --get-services
+RH-Satellite-6 RH-Satellite-6-capsule amanda-client amanda-k5-client amqp amqps apcupsd audit bacula bacula-client bgp bitcoin bitcoin-rpc bitcoin-testnet bitcoin-testnet-rpc ceph ceph-mon cfengine condor-collector ctdb dhcp dhcpv6 dhcpv6-client distcc dns docker-registry docker-swarm dropbox-lansync elasticsearch etcd-client etcd-server finger freeipa-ldap freeipa-ldaps freeipa-replication freeipa-trust ftp ganglia-client ganglia-master git gre high-availability http https imap imaps ipp ipp-client ipsec irc ircs iscsi-target isns jenkins kadmin kerberos kibana klogin kpasswd kprop kshell ldap ldaps libvirt libvirt-tls lightning-network llmnr managesieve matrix mdns minidlna mongodb mosh mountd mqtt mqtt-tls ms-wbt mssql murmur mysql nfs nfs3 nmea-0183 nrpe ntp nut openvpn ovirt-imageio ovirt-storageconsole ovirt-vmconsole plex pmcd pmproxy pmwebapi pmwebapis pop3 pop3s postgresql privoxy proxy-dhcp ptp pulseaudio puppetmaster quassel radius redis rpc-bind rsh rsyncd rtsp salt-master samba samba-client samba-dc sane sip sips slp smtp smtp-submission smtps snmp snmptrap spideroak-lansync squid ssh steam-streaming svdrp svn syncthing syncthing-gui synergy syslog syslog-tls telnet tftp tftp-client tinc tor-socks transmission-client upnp-client vdsm vnc-server wbem-http wbem-https wsman wsmans xdmcp xmpp-bosh xmpp-client xmpp-local xmpp-server zabbix-agent zabbix-server
+
+[root@master ~]# firewall-cmd --get-services | grep ssh
+
+[root@master ~]# firewall-cmd --add-service=ssh --zone=hpcsa//////////FOR ALLOW SSH
+success
+
+[root@master ~]# firewall-cmd --remove-service=ssh --zone=hpcsa
+success
+
+[root@master ~]# firewall-cmd --add-port=22/tcp  --zone=hpcsa
+success
+[root@master ~]# firewall-cmd --list-all --zone=hpcsa
+hpcsa (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33
+  sources: 
+  services: 
+  ports: 22/tcp
+  protocols: 
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+
+[root@master ~]# firewall-cmd --add-service=http  --zone=hpcsa
+success	
+[root@master ~]# firewall-cmd --add-port={443/tcp,53/udp,3306/tcp} --zone=hpcsa
+success
+
+[root@master ~]# firewall-cmd --list-all --zone=hpcsa
+hpcsa (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33
+  sources: 
+  services: http
+  ports: 22/tcp 443/tcp 53/udp 3306/tcp
+  protocols: 
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+	
+[root@master ~]# firewall-cmd --add-port=2500-3000/tcp --zone=hpcsa
+success
+[root@master ~]# firewall-cmd --remove-port=2500-3000/tcp --zone=hpcsa
+success
+
+[root@master ~]# firewall-cmd --list-all --zone=hpcsa
+hpcsa (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33
+  sources: 
+  services: http
+  ports: 22/tcp 443/tcp 53/udp 3306/tcp
+  protocols: 
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+
+[root@master ~]# firewall-cmd --add-protocol=icmp --zone=hpcsa
+success
+[root@master ~]# firewall-cmd --remove-protocol=icmp --zone=hpcsa
+success
+
+[root@master ~]# firewall-cmd --list-all --zone=hpcsa
+hpcsa (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33
+  sources: 
+  services: http
+  ports: 22/tcp 443/tcp 53/udp 3306/tcp
+  protocols: 
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+************
+[root@master ~]# firewall-cmd --query-icmp-block echo-request --zone=hpcsa
+no
+[root@master ~]# firewall-cmd --add-icmp-block echo-request --zone=hpcsa
+success
+
+[root@master ~]# firewall-cmd --list-all --zone=hpcsa
+hpcsa (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33
+  sources: 
+  services: http
+  ports: 22/tcp 443/tcp 53/udp 3306/tcp
+  protocols: 
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: echo-request
+  rich rules: 
+	
+**********adding richrule*******
+
+[root@master ~]# firewall-cmd --zone=hpcsa --add-rich-rule='rule family=ipv4 source address=172.16.10.0/24 service name=ssh accept'
+success
+C:\Users\rajesh>ssh root@172.16.10.0
+ssh: connect to host 172.16.10.0 port 22: Connection timed out
+
+[root@master ~]# firewall-cmd --zone=hpcsa --add-rich-rule='rule family=ipv4 source address=172.16.10.0/24 service name=ssh accept' --permanent
+success
+
+[root@master ~]# cd /etc/firewalld/
+[root@master firewalld]# ls
+direct.xml  firewalld.conf  helpers  icmptypes  ipsets  lockdown-whitelist.xml  services  zones
+
+[root@master ~]# cd /etc/firewalld/
+[root@master firewalld]# ls
+direct.xml  firewalld.conf  helpers  icmptypes  ipsets  lockdown-whitelist.xml  services  zones
+[root@master firewalld]# cd zones/
+[root@master zones]# ls
+hpcsa.xml  hpcsa.xml.old  public.xml  public.xml.old  trusted.xml  trusted.xml.old
+
+[root@master firewalld]# cat direct.xml 
+<?xml version="1.0" encoding="utf-8"?>
+<direct>
+  <passthrough ipv="ipv4">-t nat -A POSTROUTING -s 10.8.0.0/24 -o ens33 -j MASQUERADE</passthrough>
+</direct>
