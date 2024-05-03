@@ -1,0 +1,29 @@
+============================MASTER===================================
+..... TO ALLOW YOUTUBE.....
+  148  iptables -F
+  149  iptables -L
+  150  iptables -P DROP FORWARD 
+  151  iptables -L
+  152  iptables -P FORWARD ACCEPT
+  153  iptables -L
+  154  iptables -A FORWARD -s 192.168.199.135 -d www.youtube.com -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+  155  iptables -A FORWARD -s -i ens37 -d www.youtube.com -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+  156  iptables -A FORWARD -d 192.168.199.0/24 -s 192.168.18.2 -p udp --sport 53 -j ACCEPT
+  157  iptables -A FORWARD -s 192.168.199.0/24 -d 192.168.18.2 -p udp --dport 53 -j ACCEPT
+  158  iptables -A FORWARD -s 192.168.199.135 -d www.youtube.com -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+  159  vi /etc/resolv.conf
+  160  iptables -A FORWARD -s 192.168.199.135 -d www.youtube.com -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+  161  ip a
+  162  ifup ens33
+  163  ip a
+  164  iptables -A FORWARD -s 192.168.199.135 -d www.youtube.com -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+  165  iptables -A FORWARD -d 192.168.199.135 -s www.youtube.com -p tcp --sport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+  166  iptables -L
+  167  nslookup www.youtube.com
+  168  iptables -A INPUT -i ens33 -p icmp --icmp-type echo-request -j DROP
+  169  ip a
+=========================NODE1=========================
+78  nslookup www.youtube.com
+79  nmtui
+80  ip a
+81  nslookup www.youtube.com
