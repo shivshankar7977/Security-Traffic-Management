@@ -1,0 +1,586 @@
+============Security VPN ON putty_+++++++++++++++++++++++(https://tecadmin.net/install-openvpn-centos-8/)
+Step 1 – Disable SELinux
+Before starting, it is a good idea to disable the SELinux in your system.
+
+To disable SELinux, open the /etc/selinux/config file:
+++++++++++++++++++++++++++++++
+  302  vim /etc/selinux/config
+  303  setenforce 0
+  304  cat /proc/sys/net/ipv4/ip_forward
++++++++++++++++++
+Step 2 – Enable IP Forwarding
+Next, you will need to enable IP forwarding in your system. IP forwarding allows your operating system to accept the incoming network packets and forward it to the other network if the destination is on another network.
+
+To enable the IP forwarding, edit the file /etc/sysctl.conf:
+++++++++++++++++++++++++++++++++++++++
+  305  vim /etc/sysctl.conf
+Step 3 – Install OpenVPN Server
+By default, you will need to install the EPEL repository in your system in order to install the latest version of OpenVPN.
+
+Run the following command to install the ELEP repository:
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+  307  yum install epel-release -y
+  308  yum install openvpn -y
+  309  cd /etc/openvpn
+  310  wget https://github.com/OpenVPN/easy-rsa/releases/download/v3.0.6/EasyRSA-unix-v3.0.6.tgz
+  311  ls
+  312  tar -xvzf EasyRSA-unix-v3.0.6.tgz
+  313  mv EasyRSA-v3.0.6 easy-rsa
++++++++++++++++++++++++++
+Step 4 – Setup Certificate Authority
+Easy RSA uses a set of scripts to generate keys and certificates. First, you will need to configure the Certificate Authority on your system.
+
+To do so, change the directory to /etc/openvpn/easy-rsa and create a new Easy RSA’s configuration file:
+        // cd easy-rsa/
+      //   vim vars
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+set_var EASYRSA                 "$PWD"
+set_var EASYRSA_PKI             "$EASYRSA/pki"
+set_var EASYRSA_DN              "cn_only"
+set_var EASYRSA_REQ_COUNTRY     "INDIA"
+set_var EASYRSA_REQ_PROVINCE    "Mahrashtra"
+set_var EASYRSA_REQ_CITY        "Pune"
+set_var EASYRSA_REQ_ORG         "ACTS CDAC"
+set_var EASYRSA_REQ_EMAIL       "admin@demo.lab"
+set_var EASYRSA_REQ_OU          "ACTS"
+set_var EASYRSA_KEY_SIZE        2048
+set_var EASYRSA_ALGO            rsa
+set_var EASYRSA_CA_EXPIRE       7500
+set_var EASYRSA_CERT_EXPIRE     365
+set_var EASYRSA_NS_SUPPORT      "no"
+set_var EASYRSA_NS_COMMENT      "ACTS CDAC"
+set_var EASYRSA_EXT_DIR         "$EASYRSA/x509-types"
+set_var EASYRSA_SSL_CONF        "$EASYRSA/openssl-easyrsa.cnf"
+set_var EASYRSA_DIGEST          "sha256"
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   # ./easyrsa init-pki
+Output:
+
+Note: using Easy-RSA configuration from: ./vars
+
+init-pki complete; you may now create a CA or requests.
+Your newly created PKI dir is: /etc/openvpn/easy-rsa/pki
+./easyrsa build-ca
+
+#  ./easyrsa build-ca
+
+
+You should get the following output:
+
+Note: using Easy-RSA configuration from: ./vars
+
+Using SSL: openssl OpenSSL 1.1.1c FIPS  28 May 2019
+
+Enter New CA Key Passphrase: root
+Re-Enter New CA Key Passphrase: root
+Generating RSA private key, 2048 bit long modulus (2 primes)
+....................................................................+++++
+..........................................................................................................................................+++++
+e is 65537 (0x010001)
+Can't load /etc/openvpn/easy-rsa/pki/.rnd into RNG
+140218549745472:error:2406F079:random number generator:RAND_load_file:Cannot open file:crypto/rand/randfile.c:98:Filename=/etc/openvpn/easy-rsa/pki/.rnd
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Common Name (eg: your user, host, or server name) [Easy-RSA CA]:openvpnserver
+
+CA creation complete and you may now import and sign cert requests.
+Your new CA certificate file for publishing is at:
+/etc/openvpn/easy-rsa/pki/ca.crt
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+#ls pki/private/
++++++++++++++++++++++++++++++++
+Step 5 – Generate Server Certificate Files
+Next, you will need to generate a keypair and certificate request for your server.
+
+Run the following command to generate the server key named tecadmin-server:
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#./easyrsa gen-req demovpn nopass
++++++++++++++++++++++++++++++++++++++
+You should get the following output:
+
+[root@master easy-rsa]# ./easyrsa gen-req demovpn nopass
+
+Note: using Easy-RSA configuration from: ./vars
+
+Using SSL: openssl OpenSSL 1.0.2k-fips  26 Jan 2017
+Generating a 2048 bit RSA private key
+..........+++
+......+++
+writing new private key to '/etc/openvpn/easy-rsa/pki/private/demovpn.key.3h2ywgcFIr'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Common Name (eg: your user, host, or server name) [demovpn]:Enter
+Keypair and certificate request completed. Your files are:
+req: /etc/openvpn/easy-rsa/pki/reqs/tecadmin-server.req
+key: /etc/openvpn/easy-rsa/pki/private/tecadmin-server.key
+
+++++++++++++++++++++
+Step 6 – Sign the Server Key Using CA
+Next, you will need to sign the tecadmin-server key using your CA certificate:
+
+Run the following command to sign the server key:
+
+[root@master easy-rsa]# ./easyrsa sign-req server demovpn
+
+Note: using Easy-RSA configuration from: ./vars
+
+Using SSL: openssl OpenSSL 1.0.2k-fips  26 Jan 2017
+
+
+You are about to sign the following certificate.
+Please check over the details shown below for accuracy. Note that this request
+has not been cryptographically verified. Please be sure it came from a trusted
+source or that you have verified the request checksum with the sender.
+
+Request subject, to be signed as a server certificate for 365 days:
+
+subject=
+    commonName                = demovpn
+
+
+Type the word 'yes' to continue, or any other input to abort.
+  Confirm request details: yes
+Using configuration from /etc/openvpn/easy-rsa/pki/safessl-easyrsa.cnf
+Enter pass phrase for /etc/openvpn/easy-rsa/pki/private/ca.key: root-----------###passwd###
+Check that the request matches the signature
+Signature ok
+The Subject's Distinguished Name is as follows
+commonName            :ASN.1 12:'demovpn'
+Certificate is to be certified until Jul  2 05:28:28 2024 GMT (365 days)
+
+Write out database with 1 new entries
+Data Base Updated
+
+Certificate created at: /etc/openvpn/easy-rsa/pki/issued/demovpn.crt
+++++++++++++++++++++++
+[root@master easy-rsa]# cat pki/issued/demovpn.crt
+++++++++++Next, verify the generated certificate file with the following command:++++++++++
+[root@master easy-rsa]# openssl verify -CAfile pki/ca.crt pki/issued/demovpn.crt-------------------it is use for verify certificate
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Next, run the following command to generate a strong Diffie-Hellman key to use for the key exchange:
+
+./easyrsa gen-dh
+You should get the following output:
+
+Note: using Easy-RSA configuration from: ./vars
+
+Using SSL: openssl OpenSSL 1.1.1c FIPS  28 May 2019
+Generating DH parameters, 2048 bit long safe prime, generator 2
+This is going to take a long time
+....+................................+........................................+.....++*++*++*++*
+
+DH parameters of size 2048 created at /etc/openvpn/easy-rsa/pki/dh.pem
+
++++++++++++++++++++++++++++++++++++++
+After creating all certificate files, copy them to the /etc/openvpn/server/ directory:
+#cp pki/ca.crt /etc/openvpn/server/------------------------------Public key
+
+#cp pki/dh.pem /etc/openvpn/server/--------------------------domain key
+
+#cp pki/private/demovpn.key /etc/openvpn/server/---------------private key
+
+#cp pki/issued/demovpn.crt /etc/openvpn/server/--------------------publickey
+
+
+_______________________________________________________________________________
+Step 7 – Generate Client Certificate and Key File
+Next, you will need to generate the key and certificate file for the client.
+
+First, run the following command to build the client key file:
+
+[root@master easy-rsa]# ./easyrsa gen-req client nopass
+
+Note: using Easy-RSA configuration from: ./vars
+
+Using SSL: openssl OpenSSL 1.0.2k-fips  26 Jan 2017
+Generating a 2048 bit RSA private key
+.............................................................................................................................................+++
+...................+++
+writing new private key to '/etc/openvpn/easy-rsa/pki/private/client.key.zIkBUIvR5t'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Common Name (eg: your user, host, or server name) [client]:client1
+
+Keypair and certificate request completed. Your files are:
+req: /etc/openvpn/easy-rsa/pki/reqs/client.req
+key: /etc/openvpn/easy-rsa/pki/private/client.key
+
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Next, sign the client key using your CA certificate:
+
+#./easyrsa sign-req client client
+
+You should get the following output:
+
+Note: using Easy-RSA configuration from: ./vars
+
+Using SSL: openssl OpenSSL 1.0.2k-fips  26 Jan 2017
+
+
+You are about to sign the following certificate.
+Please check over the details shown below for accuracy. Note that this request
+has not been cryptographically verified. Please be sure it came from a trusted
+source or that you have verified the request checksum with the sender.
+
+Request subject, to be signed as a client certificate for 365 days:
+
+subject=
+    commonName                = client1
+
+Type the word 'yes' to continue, or any other input to abort.
+  Confirm request details: yes
+Using configuration from /etc/openvpn/easy-rsa/pki/safessl-easyrsa.cnf
+Enter pass phrase for /etc/openvpn/easy-rsa/pki/private/ca.key:root
+Check that the request matches the signature
+Signature ok
+The Subject's Distinguished Name is as follows
+commonName            :ASN.1 12:'client1'
+Certificate is to be certified until Jul  2 06:30:55 2024 GMT (365 days)
+
+Write out database with 1 new entries
+Data Base Updated
+
+Certificate created at: /etc/openvpn/easy-rsa/pki/issued/client.crt
+
+
+
+________________________________________________________________________
+
+
+[root@master easy-rsa]# ./easyrsa gen-req jerry nopass================for generate request
+
+Note: using Easy-RSA configuration from: ./vars
+
+Using SSL: openssl OpenSSL 1.0.2k-fips  26 Jan 2017
+Generating a 2048 bit RSA private key
+..........................................................................................................................................................................+++
+............+++
+writing new private key to '/etc/openvpn/easy-rsa/pki/private/jerry.key.MN7e03RsxX'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Common Name (eg: your user, host, or server name) [jerry]:jerry
+
+Keypair and certificate request completed. Your files are:
+req: /etc/openvpn/easy-rsa/pki/reqs/jerry.req
+key: /etc/openvpn/easy-rsa/pki/private/jerry.key
+
+[root@master easy-rsa]# ./easyrsa sign-req client jerry==================to sign request for client
+
+Note: using Easy-RSA configuration from: ./vars
+
+Using SSL: openssl OpenSSL 1.0.2k-fips  26 Jan 2017
+
+
+You are about to sign the following certificate.
+Please check over the details shown below for accuracy. Note that this request
+has not been cryptographically verified. Please be sure it came from a trusted
+source or that you have verified the request checksum with the sender.
+
+Request subject, to be signed as a client certificate for 365 days:
+
+subject=
+    commonName                = jerry
+
+
+Type the word 'yes' to continue, or any other input to abort.
+  Confirm request details: yes
+Using configuration from /etc/openvpn/easy-rsa/pki/safessl-easyrsa.cnf
+Enter pass phrase for /etc/openvpn/easy-rsa/pki/private/ca.key:
+Check that the request matches the signature
+Signature ok
+The Subject's Distinguished Name is as follows
+commonName            :ASN.1 12:'jerry'
+Certificate is to be certified until Jul  2 06:33:18 2024 GMT (365 days)
+
+Write out database with 1 new entries
+Data Base Updated
+
+Certificate created at: /etc/openvpn/easy-rsa/pki/issued/jerry.crt
+__________________________________________________
+Next, copy all client certificate and key file to the /etc/openvpn/client/ directory:
+
+cp pki/ca.crt /etc/openvpn/client/
+cp pki/issued/client.crt /etc/openvpn/client/
+cp pki/private/client.key /etc/openvpn/client/
+
+_______________________________________________________
+
+Step 8 – Configure OpenVPN Server
+Next, create a new OpenVPN configuration file inside /etc/openvpn/client/ directory:
+
+#cd /etc/openvpn/server/
+#vim  server.conf
+
+Add the following lines:
+
+
+port 1194
+proto udp
+dev tun
+ca /etc/openvpn/server/ca.crt
+cert /etc/openvpn/server/demovpn.crt
+key /etc/openvpn/server/demovpn.key
+dh /etc/openvpn/server/dh.pem
+server 10.8.0.0 255.255.255.0
+#push "redirect-gateway def1"
+#push "dhcp-option DNS 208.67.222.222"
+#push "dhcp-option DNS 208.67.220.220"
+duplicate-cn
+cipher AES-256-CBC
+tls-version-min 1.2
+tls-cipher TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256
+auth SHA512
+auth-nocache
+keepalive 20 60
+persist-key
+persist-tun
+compress lz4
+daemon
+user nobody
+group nobody
+log-append /var/log/openvpn.log
+verb 3
+
+Save the file when you are finished.
+___________________________________________________________
+
+
+Step 9 – Start OpenVPN Service
+OpenVPN is now installed and configured. You can now start the OpenVPN service and enable it to start after the system reboot using the following command:
+
+#systemctl start openvpn-server@server
+#systemctl enable openvpn-server@server
+++++++++++++++++++++++++++++++
+
+Run the following command to verify the status of OpenVPN service:
+
+systemctl status openvpn-server@server
+
+You should get the following output:
+
+● openvpn-server@server.service - OpenVPN service for server
+   Loaded: loaded (/usr/lib/systemd/system/openvpn-server@.service; enabled; vendor preset: disabled)
+   Active: active (running) since Mon 2020-02-17 00:29:26 EST; 39min ago
+     Docs: man:openvpn(8)
+           https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage
+           https://community.openvpn.net/openvpn/wiki/HOWTO
+ Main PID: 32405 (openvpn)
+   Status: "Initialization Sequence Completed"
+    Tasks: 1 (limit: 12552)
+   Memory: 1.9M
+   CGroup: /system.slice/system-openvpn\x2dserver.slice/openvpn-server@server.service
+           └─32405 /usr/sbin/openvpn --status /run/openvpn-server/status-server.log --status-version 2 --suppress-timestamps --cipher AES-256->
+
+Feb 17 00:29:26 centos8 systemd[1]: Starting OpenVPN service for server...
+Feb 17 00:29:26 centos8 systemd[1]: Started OpenVPN service for server.
+___________________________________________________________________________
+
+
+Step 11 – Configure Routing using Firewalld
+First, you will need to allow the OpenVPN service through firewalld.
+
+To do so, add the OpenVPN service and tun0 interface to the trusted firewall zone:
+
+#systemctl start firewalld.service
+[root@master server]# firewall-cmd --permanent --add-service=openvpn
+success
+[root@master server]# firewall-cmd --permanent --zone=trusted --add-service=openvpn
+success
+[root@master server]# firewall-cmd --permanent --zone=trusted --add-interface=tun0
+success
+
+Next, add the MASQUERADE on the default zone:
+
+#firewall-cmd --add-masquerade
+#firewall-cmd --permanent --add-masquerade
+
+Next, run the following command to masquerade the internet traffic coming from VPN network (10.8.0.0/24) to systems local network interface (eth0).
+
+[root@master server]# tecadmin=$(ip route get 8.8.8.8 | awk 'NR==1 {print $(NF-2)}')
+[root@master server]# ip route get 8.8.8.8-----------------------------------------#to show gateway
+8.8.8.8 via 192.168.18.2 dev ens33 src 192.168.18.134
+    cache
+[root@master server]# firewall-cmd --permanent --direct --passthrough ipv4 -t nat -A POSTROUTING -s 10.8.0.0/24 -o ens33 -j MASQUERADE
+success
+
+Finally, run the following command to implement the changes:
+
+[root@master server]# firewall-cmd --reload-------------------------------configuration rule reload and read 
+success
+-------------------------------------------------------------------
+Step 10 – Generate Client Configuration File
+Next, create a new OpenVPN client configuration file named client.ovpn. You will require this file to connect your OpenVPN server from the client system.
+
+vim /etc/openvpn/client/client.ovpn
+Add the following lines:
+
+client
+dev tun
+proto udp
+remote 192.168.18.134 1194----------NAT IP
+ca ca.crt
+cert client.crt
+key client.key
+cipher AES-256-CBC
+auth SHA512
+auth-nocache
+tls-version-min 1.2
+tls-cipher TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256
+resolv-retry infinite
+compress lz4
+nobind
+persist-key
+persist-tun
+mute-replay-warnings
+verb 3
+
+--------------------------------------------
+Step 12 – Connect OpenVPN from Clients
+First, log in to the client machine and install the OpenVPN package with the following command:
+
+
+[root@master server]# scp -r /etc/openvpn/client root@192.168.18.135:/root
+ssh: connect to host 192.168.18.135 port 22: No route to host
+lost connection
+[root@master server]# scp -r /etc/openvpn/client root@192.168.18.135:/root
+The authenticity of host '192.168.18.135 (192.168.18.135)' can't be established.
+ECDSA key fingerprint is SHA256:n6pm4eM1En6zKYBUMaVhi9+ClAN5W0TKLq+AwvwLjzs.
+ECDSA key fingerprint is MD5:bc:17:ea:ca:6d:38:1e:d1:12:d9:fd:da:10:d0:ea:a8.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.18.135' (ECDSA) to the list of known hosts.
+root@192.168.18.135's password:
+ca.crt                                                                              100% 1180   320.1KB/s   00:00
+client.crt                                                                          100% 4445     1.1MB/s   00:00
+client.key                                                                          100% 1704   454.5KB/s   00:00
+client.ovpn                                                                         100%  406   115.5KB/s   00:00
+[root@master server]#
+
+============================================
+[root@client1 ~]# ls /root/
+anaconda-ks.cfg  Desktop    Downloads             Music     Public     Videos
+client           Documents  initial-setup-ks.cfg  Pictures  Templates
+
+============================================================
+CLIENT 1----------LINUX ---------------
+
+268  yum install epel-release
+269  yum install openvpn
+
+--------------------Go in client wired-setting change DNS --Automatic IP
+
+[root@client1 ~]# cd client/
+[root@client1 client]# ls
+ca.crt  client.crt  client.key  client.ovpn
+[root@client1 client]# openvpn  --config client.ovpn
+
+-------------New Terminal=--------------
+[root@client1 ~]# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+10.8.0.1        10.8.0.5        255.255.255.255 UGH   0      0        0 tun0
+10.8.0.5        0.0.0.0         255.255.255.255 UH    0      0        0 tun0
+192.168.18.0    0.0.0.0 
+
+++++++++++++++++++++++++++++++++++++++++++++++++
+
+================ON MASTER(SERVER)+===========------
+[root@master ~]# cd /etc/openvpn/server/
+[root@master server]# vim server.conf 
+
+port 1194
+proto udp
+dev tun
+ca /etc/openvpn/server/ca.crt
+cert /etc/openvpn/server/demovpn.crt
+key /etc/openvpn/server/demovpn.key
+dh /etc/openvpn/server/dh.pem
+server 10.8.0.0 255.255.255.0
+push "route 192.168.199.0 255.255.255.0"==========ADD THIS COMMAND(https://openvpn.net/community-resources/expanding-the-scope-of-the-vpn-to-include-additional-machines-on-either-the-client-or-server-subnet/)
+#push "redirect-gateway def1"
+#push "dhcp-option DNS 208.67.222.222"
+#push "dhcp-option DNS 208.67.220.220"
+duplicate-cn
+cipher AES-256-CBC
+tls-version-min 1.2
+tls-cipher TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256
+auth SHA512
+auth-nocache
+keepalive 20 60
+persist-key
+persist-tun
+compress lz4
+daemon
+user nobody
+group nobody
+log-append /var/log/openvpn.log
+verb 3
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+--------------------Go in client wired-setting change DNS --Automatic IP
+
+[root@client1 ~]# cd client/
+[root@client1 client]# ls
+ca.crt  client.crt  client.key  client.ovpn
+[root@client1 client]# openvpn  --config client.ovpn================CONNECT THE VPN
+
+-------------New Terminal=--------------
+
+[root@client1 ~]# route -n
+Kernel IP routing table
+Destination	Gateway	Genmask		Flags 	Metric	Ref	Use Iface
+10.8.0.1		10.8.0.5	255.255.255.255	UGH	0	0	0 tun0
+10.8.0.5	 	0.0.0.0	255.255.255.255	UH	0	0	0 tun0
+192.168.18.0         	0.0.0.0	255.255.255.0	U	100	0	0 ens33
+192.168.199.0       	10.8.0.5	255.255.255.0	UG	0	0	0 tun0
+
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Uninstall on client and Server
+
+1) Systemctl stop openvpn-server@server
+2)yum erase openvpn
+3)rm -rf /etc/openvpn
+4)rm -rf /root/client 
+
+
+
+
+
+
+
+
+
+
+
+
