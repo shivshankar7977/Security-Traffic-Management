@@ -1,0 +1,113 @@
++++=**********MASTER********
+# yum install epel-release
+#yum install nginx
+#cd  /etc/nginx/
+#vim nginx.conf
+-----}
+	location  /  {
+		proxy_pass http://localhost/;
+	 }
+	location  /linux  {
+		proxy_pass http://192.168.199.136/;   ###(ip of linuxclient)
+	 }
+	location  /win  {
+		proxy_pass http://192.168.199.139:8000/;
+	 }
+}
+#Settings for a TLS enabled server.
+-----------------------------------------------------------------------------------------
+++++++++++++on client+++++++++
+[root@client1 nginx]# systemctl restart nginx.service 
+[root@client1 nginx]# systemctl status nginx.service 
+
+http://192.168.18.136/linux----(NAT IP)
+http://192.168.18.136/win-----(NAT IP)
+
+@IF not working then check win or linux ip and index files
+
+**********ON CLIENT**********
+yum install httpd
+#cd /var/www/html
+[root@node2 ~]#vim index.html
+[root@node2 ~]# firewall-cmd --add-service=http
+
+
+**********WINDOWS***************
+----ON BROWSER-----------------http://localhost:8000/--------------
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+**********MASTER********
+#cd  /etc/nginx/
+#vim nginx.conf
+
+       # Load modular configuration files from the /etc/nginx/conf.d directory.
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    # for more information.
+    include /etc/nginx/conf.d/*.conf;
+
+1)    upstream hpcsa {
+        server 192.168.199.136;          ------------------------//On browser/http://192.168.18.134 (NAT IP)
+        server 192.168.199.139:8000;
+    }
+
+2)  upstream hpcsa {
+        least_conn;
+        server 192.168.199.136;   -----------//open 3 new tabs On browser/http://192.168.18.134 (NAT IP)----
+        server 192.168.199.139:8000;
+
+3)  upstream hpcsa {
+        server 192.168.199.136 weight=3;   -----------//On browser/http://192.168.18.134 (NAT IP)-------it take time to reload
+        server 192.168.199.139:8000;
+
+4)   upstream hpcsa {
+         ip_hash;
+          server 192.168.199.136;  -----------//On browser/http://192.168.18.134 (NAT IP)-------not reload another 
+           server 192.168.199.139:8000;
+      }
+
+$$$$$$$$$Error$$$$$$$$$
+[root@client1 nginx]# vim nginx.conf
+[root@client1 nginx]# systemctl restart nginx.service 
+[root@client1 nginx]# firewall-cmd --list-all
+public (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens33 ens37
+  sources: 
+  services: dhcpv6-client openvpn ssh
+  ports: 
+  protocols: 
+  masquerade: yes
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+	
+[root@client1 nginx]# firewall-cmd --add-service=http
+success
+[root@client1 nginx]# 
+
+
+
+#Settings for a TLS enabled server.
+-----------------------------------------------------------------------------------------
+++++++++++++on root+++++++++
+[root@client1 nginx]# systemctl restart nginx.service 
+[root@client1 nginx]# systemctl status nginx.service 
+
+http://192.168.18.136/linux----(NAT IP)
+http://192.168.18.136/win-----(NAT IP)
+
+@IF not working then check win or linux ip and index files
+
+**********ON CLIENT**********
+# yum install apache
+#cd /var/www/html
+[root@node2 ~]# firewall-cmd --add-service=http
+
+
+**********WINDOWS***************
+----ON BROWSER-----------------http://localhost:8000/--------------
