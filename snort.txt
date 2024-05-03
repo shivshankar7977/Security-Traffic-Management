@@ -1,0 +1,6 @@
+alert tcp any any -> any 8000 (msg:"virus.py downloaded";content:"virus";nocase;sid:1000011;rev:1;)
+alert tcp any 8000 -> any any (msg:"index.html downloaded";content:"Hackers website";nocase;sid:1000021;rev:2;)
+alert icmp any any -> 192.168.18.141 any (msg:"large ping packet detected";dsize:>256;sid:1000003;)
+alert icmp $HOME_NET any -> any any (msg:"Traceroute detected";ttl:<3;sid:1000004;)
+alert tcp  any any -> 192.168.18.141 any (msg:"Possible NMAP Scan";flow:stateless;flags:S;detection_filter:track by_src,count 10,seconds 1;sid:1000005;)
+alert tcp  !192.168.18.148 any -> 192.168.18.141 22 (msg:"Invalid SSH access";sid:1000006;)
