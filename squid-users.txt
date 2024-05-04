@@ -1,0 +1,45 @@
+#sudo systemctl status squid
+#sudo htpasswd /etc/squid/squid-users user2 ===========use only one time use hypenfor add user
+#cat /etc/squid/squid-users
+#sudo htpasswd /etc/squid/squid-users user3
+#vi /etc/squid/user1.txt
+.wikipedia.org
+.cisco.com
+.netflix.com
+#vi /etc/squid/squid.conf
+
+# INSERT YOUR OWN RULE(S) HERE TO ALLOW ACCESS FROM YOUR CLIENTS
+acl user1 proxy_auth user1
+acl user1-access dstdomain "/etc/squid/user1.txt"
+http_access deny user1-access user1
+#systemctl restart squid
+
+#vi /etc/squid/cartoon.txt
+.disney.com
+.hotstar.com
+.netflix.com
+.jio.com
+# INSERT YOUR OWN RULE(S) HERE TO ALLOW ACCESS FROM YOUR CLIENTS
+
+acl cartoons proxy_auth tom jerry noddy
+acl user1-access dstdomain "/etc/squid/user1.txt"
+acl cartoon-access dstdomain "/etc/squid/cartoon.txt"
+http_access allow user1-access user1
+http_access allow cartoon-access cartoons
+
+#http_access deny badwords !client_blocked
+#http_access deny client_blocked hpcsalab
+#http_access allow hpcsalab
+http_access deny acts_users all
+
+
+=====Go on client browser and check======
+
+.wikipedia.org
+.cisco.com
+.netflix.com
+
+.disney.com
+.hotstar.com
+.netflix.com
+.jio.com
