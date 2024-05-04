@@ -1,0 +1,12 @@
+###########Blocked website for perticular time###########
+
+step1:
+
+acl cdac-time time F 21:00-21:30
+acl cdac dstdomain cdac.in
+
+http_access deny cdac cdac-time
+
+$$$$$$$$$$$$ Make sure machine time with 24 hrs $$$$$$$$$$$$$$$$$
+
+
