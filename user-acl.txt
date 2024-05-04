@@ -1,0 +1,21 @@
+################# squid with userid/password ##########################
+
+1.firewall nat ip 192.168.59.151
+2.firewall host ip 192.168.133.146
+
+3.client host only ip 192.168.133.140
+
+4. yum install httpd
+
+#htpasswd -c /etc/squid/squid-users user1
+
+password: root
+
+#cat /etc/squid/squid-users
+user1:$apr1$qTtKPt/B$NycUasSHrb7F.sIgXd/ga.
+
+
+#htpasswd -c /etc/squid/squid-users user2
+# cat /etc/squid/squid-users user2
+user2:
+
