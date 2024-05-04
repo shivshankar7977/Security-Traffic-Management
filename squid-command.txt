@@ -1,0 +1,81 @@
+####################### squid Acl rules ##############################
+
+1.firewall (nat ,host)
+2.client   (host only)
+
+#on firewall (fresh machine)
+ yum remove iptables.x86_64 
+
+
+# yum install squid
+
+# cd /etc/squid
+
+# vim squid.conf
+
+67 cache_dir ufs /var/spool/squid 2048 16 256
+68 visible_hostname proxy.hpcsa.lab
+#comment http_access allow localnet
+# squid -z
+
+# ls /var/spool/squid
+
+# systemctl restart squid
+# systemctl status squid
+
+####### on client #####
+
+1. set manual proxy ( firewall host only ip)
+############## on firewall ##########
+
+# vim /etc/squid/squid.conf          
+
+acl hpcsalab src 192.168.133.0/24
+
+http_access allow hpcsalab
+
+### block multiple website through txt file
+
+1.create text file .txt and add 2-3 websites
+
+2.add rules in vim squid.conf
+
+acl block_sites dstdomain "/etc/squid/block-sites.txt"
+
+http_access deny block_sites hpcsalab
+
+### now go on client browser and check the sites
+
+Q.1 a. Block some websites for client1 and allow for client2.
+ 
+Solution:
+
+step 1:on firewall Create text file and add 2,3 websites.
+step 2:acl client1 src 192.168.133.140
+step 3:acl client1_blocked_sites dstdomain "/etc/squid/client1-blocked-sites.txt"
+step 4:http_access deny client1_blocked_sites client1.
+
+
+Q1 b. Block some websites for client2 and allow for client1.
+ 
+Solution:
+
+step 1:on firewall Create text file and add 2,3 websites.
+step 2:acl client2 src 192.168.133.143
+step 3:acl client2_blocked_sites dstdomain "/etc/squid/client2-blocked-sites.txt"
+step 4:http_access deny client2_blocked_sites client2.
+
+
+Q1 c. Block some websites for both clients.
+
+Solutions:
+
+step 1:on firewall Create text file and add 2,3 websites.
+step 2:acl band_sites dstdomain "/etc/squid/band-sites.txt"
+step 3:http_access deny band_sites hpcsalab
+
+
+
+Common Steps for a,b,c
+
+#Go on Clients browser and check sites respectively.
