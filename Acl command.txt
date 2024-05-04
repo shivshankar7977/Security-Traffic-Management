@@ -1,0 +1,38 @@
+1.src: source (client) IP addresses
+2.dst: destination (server) IP addresses
+3.myip: the local IP address of a client’s connection
+4.arp: Ethernet (MAC) address matching
+5.srcdomain: source (client) domain name
+6.dstdomain: destination (server) domain name
+7.srcdom_regex: source (client) regular expression pattern matching
+8.dstdom_regex: destination (server) regular expression pattern matching
+9.src_as: source (client) Autonomous System number
+10.dst_as: destination (server) Autonomous System number
+11.peername: name tag assigned to the cache_peer where request is expected to be sent.
+19.time: time of day, and day of week
+20.url_regex: URL regular expression pattern matching
+21.urlpath_regex: URL-path regular expression pattern matching, leaves out the protocol and hostname
+22.port: destination (server) port number
+23.myport: local port number that client connected to
+24.myportname: name tag assigned to the squid listening port that client connected to
+25.proto: transfer protocol (http, ftp, etc)
+26.method: HTTP request method (get, post, etc)
+27.http_status: HTTP response status (200 302 404 etc.)
+28.browser: regular expression pattern matching on the request user-agent header
+29.referer_regex: regular expression pattern matching on the request http-referer header
+30.ident: string matching on the user’s name
+31.ident_regex: regular expression pattern matching on the user’s name
+32.proxy_auth: user authentication via external processes
+33.proxy_auth_regex: regular expression pattern matching on user authentication via external processes
+34.snmp_community: SNMP community string matching
+35.maxconn: a limit on the maximum number of connections from a single client IP address
+36.max_user_ip: a limit on the maximum number of IP addresses one user can login from
+37.req_mime_type: regular expression pattern matching on the request content-type header
+38.req_header: regular expression pattern matching on a request header content
+40.rep_mime_type: regular expression pattern matching on the reply (downloaded content) content-type header. This is only usable in the http_reply_access directive, not http_access.
+41.rep_header: regular expression pattern matching on a reply header content. This is only usable in the http_reply_access directive, not http_access.
+42.external: lookup via external acl helper defined by external_acl_type
+43.user_cert: match against attributes in a user SSL certificate
+44.ca_cert: match against attributes a users issuing CA SSL certificate
+45.ext_user: match on user= field returned by external acl helper defined by external_acl_type
+46.ext_user_regex: regular expression pattern matching on user= field returned by external acl helper defined by external_acl_type
