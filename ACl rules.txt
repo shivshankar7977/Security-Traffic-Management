@@ -1,0 +1,26 @@
+# INSERT YOUR OWN RULE(S) HERE TO ALLOW ACCESS FROM YOUR CLIENTS
+auth_param basic program /usr/lib64/squid/basic_ncsa_auth /etc/squid/squid-users
+
+auth_param basic children 5
+auth_param basic realm squid basic Authentication
+auth_param basic credentialsttl 2 hours
+acl acts_users proxy_auth REQUIRED
+acl user1 proxy_auth user1
+acl user1-access dstdomain "/etc/squid/user1.txt"
+http_access allow user1-access user1
+
+#acl mynet src 192.168.133.0/24
+#acl client1 src 192.168.133.134
+#acl client1-blocked dstdomain "etc/squid/client1-blocked.txt"
+#acl microsoft dstdomain .microsoft.com
+#acl blocked_sites dstdomain "/etc/squid/blocked_sites.txt
+#acl cdac-time time A 17:50-17:53
+#acl cdac dstdomain .cdac.in
+
+#http_access deny microsoft mynet
+#http_access deny blocked_sites mynet
+#http_access deny client1-blocked client1
+#http_access deny cdac cdac-time
+http_access allow acts_users
+#http_access allow mynet
+http_access deny acts_users
